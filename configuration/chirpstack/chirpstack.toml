@@ -19,7 +19,7 @@
   #  * require - Always SSL (skip verification)
   #  * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
   #  * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
-  dsn="postgres://chirpstack:chirpstack@postgres/chirpstack?sslmode=disable"
+  dsn="postgres://chirpstack_as:dbpassword@localhost:5431/chirpstack_as?sslmode=disable"
 
   # Max open connections.
   #
@@ -69,7 +69,7 @@
     "as923_2",
     "as923_3",
     "as923_4",
-    "au915_0",
+    "au915",
     "cn779",
     "eu433",
     "eu868",
@@ -83,18 +83,56 @@
 
 
 # API interface configuration.
-[api]
+# Settings for the "internal api"
+  #
+  # This is the API used by ChirpStack Network Server to communicate with ChirpStack Application Server
+  # and should not be exposed to the end-user.
+  [api]
+  # ip:port to bind the api server
+  bind="0.0.0.0:8001"
 
-  # interface:port to bind the API interface to.
+  # ca certificate used by the api server (optional)
+  ca_cert=""
+
+  # tls certificate used by the api server (optional)
+  tls_cert=""
+
+  # tls key used by the api server (optional)
+  tls_key=""
+
+  # Public ip:port of the application-server API.
+  #
+  # This is used by ChirpStack Network Server to connect to ChirpStack Application Server. When running
+  # ChirpStack Application Server on a different host than ChirpStack Network Server, make sure to set
+  # this to the host:ip on which ChirpStack Network Server can reach ChirpStack Application Server.
+  # The port must be equal to the port configured by the 'bind' flag
+  # above.
+  public_host="localhost:8001"
+
+
+  # Settings for the "external api"
+  #
+  # This is the API and web-interface exposed to the end-user.
+  [external_api]
+  # ip:port to bind the (user facing) http server to (web-interface and REST / gRPC api)
   bind="0.0.0.0:8080"
 
-  # Secret.
+  # http server TLS certificate (optional)
+  tls_cert=""
+
+  # http server TLS key (optional)
+  tls_key=""
+
+  # JWT secret used for api authentication / authorization
+  # You could generate this by executing 'openssl rand -base64 32' for example
+  jwt_secret="VjCJDocb7VXFNCEUXJxd0RA2lOA1S3G3BAvwgP2f8Xc="
+
+  # Allow origin header (CORS).
   #
-  # This secret is used for generating login and API tokens, make sure this
-  # is never exposed. Changing this secret will invalidate all login and API
-  # tokens. The following command can be used to generate a random secret:
-  #   openssl rand -base64 32
-  secret="you-must-replace-this"
+  # Set this to allows cross-domain communication from the browser (CORS).
+  # Example value: https://example.com.
+  # When left blank (default), CORS will not be used.
+  cors_allow_origin=""
 
 
 [gateway]
@@ -103,13 +141,178 @@
   ca_key="configuration/certs/ca.key"
 
 [integration]
+  # Payload marshaler.
+  #
+  # This defines how the MQTT payloads are encoded. Valid options are:
+  # * protobuf:  Protobuf encoding
+  # * json:      JSON encoding (easier for debugging, but less compact than 'protobuf')
+  # * json_v3:   v3 JSON (will be removed in the next major release)
+  marshaler="json_v3"
+
+    # Enabled integrations.
+  #
+  # Enabled integrations are enabled for all applications. Multiple
+  # integrations can be configured.
+  # Do not forget to configure the related configuration section below for
+  # the enabled integrations. Integrations that can be enabled are:
+  # * mqtt              - MQTT broker
+  # * amqp              - AMQP / RabbitMQ
+  # * aws_sns           - AWS Simple Notification Service (SNS)
+  # * azure_service_bus - Azure Service-Bus
+  # * gcp_pub_sub       - Google Cloud Pub/Sub
+  # * kafka             - Kafka distributed streaming platform
+  # * postgresql        - PostgreSQL database
   enabled=["mqtt"]
 
   [integration.mqtt]
-    server="tcp://mosquitto:1883/"
-    json=true
+      # Event topic template.
+  event_topic_template="application/{{ .ApplicationID }}/device/{{ .DevEUI }}/event/{{ .EventType }}"
+
+  # Command topic template.
+  command_topic_template="application/{{ .ApplicationID }}/device/{{ .DevEUI }}/command/{{ .CommandType }}"
+
+  # Retain events.
+  #
+  # The MQTT broker will store the last publised message, when retain events is set
+  # to true. When a MQTT client connects and subscribes, it will always receive the
+  # last published message.
+  retain_events=false
+
+  # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
+
+  server="tcp://mosquitto:1883/"
+  json=true
+
+  # Connect with the given username (optional)
+  username=""
+
+  # Connect with the given password (optional)
+  password=""
+
+  # Maximum interval that will be waited between reconnection attempts when connection is lost.
+  # Valid units are 'ms', 's', 'm', 'h'. Note that these values can be combined, e.g. '24h30m15s'.
+  max_reconnect_interval="1m0s"
+
+  # Quality of service level
+  #
+  # 0: at most once
+  # 1: at least once
+  # 2: exactly once
+  #
+  # Note: an increase of this value will decrease the performance.
+  # For more information: https://www.hivemq.com/blog/mqtt-essentials-part-6-mqtt-quality-of-service-levels
+  qos=0
+
+  # Clean session
+  #
+  # Set the "clean session" flag in the connect message when this client
+  # connects to an MQTT broker. By setting this flag you are indicating
+  # that no messages saved by the broker for this client should be delivered.
+  clean_session=true
+
+  # Client ID
+  #
+  # Set the client id to be used by this client when connecting to the MQTT
+  # broker. A client id must be no longer than 23 characters. When left blank,
+  # a random id will be generated. This requires clean_session=true.
+  client_id=""
+
+  # CA certificate file (optional)
+  #
+  # Use this when setting up a secure connection (when server uses ssl://...)
+  # but the certificate used by the server is not trusted by any CA certificate
+  # on the server (e.g. when self generated).
+  ca_cert=""
+
+  # TLS certificate file (optional)
+  tls_cert=""
+
+  # TLS key file (optional)
+  tls_key=""
+
+    # Client configuration.
+    #
+    # This section contains configuration for end-applications connecting to the
+    # MQTT broker.
 
     [integration.mqtt.client]
       client_cert_lifetime="365days"
       ca_cert="configuration/certs/ca.crt"
       ca_key="configuration/certs/ca.key"
+[metrics]
+# Timezone
+#
+# The timezone is used for correctly aggregating the metrics (e.g. per hour,
+# day or month).
+# Example: "Europe/Amsterdam" or "Local" for the the system's local time zone.
+timezone="Local"
+
+  # Metrics stored in Redis.
+  #
+  # The following metrics are stored in Redis:
+  # * gateway statistics
+  [metrics.redis]
+  # Aggregation intervals
+  #
+  # The intervals on which to aggregate. Available options are:
+  # 'MINUTE', 'HOUR', 'DAY', 'MONTH'.
+  aggregation_intervals=["MINUTE", "HOUR", "DAY", "MONTH"]
+
+  # Aggregated statistics storage duration.
+  minute_aggregation_ttl="2h0m0s"
+  hour_aggregation_ttl="48h0m0s"
+  day_aggregation_ttl="2160h0m0s"
+  month_aggregation_ttl="17520h0m0s"
+
+
+  # Metrics stored in Prometheus.
+  #
+  # These metrics expose information about the state of the ChirpStack Network Server
+  # instance.
+  [metrics.prometheus]
+  # Enable Prometheus metrics endpoint.
+  endpoint_enabled=false
+
+  # The ip:port to bind the Prometheus metrics server to for serving the
+  # metrics endpoint.
+  bind=""
+
+  # API timing histogram.
+  #
+  # By setting this to true, the API request timing histogram will be enabled.
+  # See also: https://github.com/grpc-ecosystem/go-grpc-prometheus#histograms
+  api_timing_histogram=false
+
+
+  # Monitoring settings.
+  #
+  # Note that this replaces the metrics.prometheus configuration. If a
+  # metrics.prometheus if found in the configuration then it will fall back
+  # to that and the monitoring section is ignored.
+  [monitoring]
+
+  # IP:port to bind the monitoring endpoint to.
+  #
+  # When left blank, the monitoring endpoint will be disabled.
+  bind=""
+
+  # Prometheus metrics endpoint.
+  #
+  # When set to true, Prometheus metrics will be served at '/metrics'.
+  prometheus_endpoint=false
+
+  # Prometheus API timing histogram.
+  #
+  # By setting this to true, the API request timing histogram will be enabled.
+  # See also: https://github.com/grpc-ecosystem/go-grpc-prometheus#histograms
+  prometheus_api_timing_histogram=false
+
+  # Health check endpoint.
+  #
+  # When set to true, the healthcheck endpoint will be served at '/health'.
+  # When requesting, this endpoint will perform the following actions to
+  # determine the health of this service:
+  #   * Ping PostgreSQL database
+  #   * Ping Redis database
+  healthcheck_endpoint=false
+

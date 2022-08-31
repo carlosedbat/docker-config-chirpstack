@@ -1,57 +1,65 @@
 version: "3"
 
 services:
-  chirpstack:
-    image: chirpstack/chirpstack:4.0.0-rc.3
-    command: -c /etc/chirpstack
+  chirpstack-network-server:
+    image: chirpstack/chirpstack-network-server:latest
     restart: unless-stopped
     volumes:
-      - ./configuration/chirpstack:/etc/chirpstack
+      - ./configuration/chirpstack-network-server:/etc/chirpstack-network-server
       - ./lorawan-devices:/opt/lorawan-devices
     depends_on:
-      - postgres
+      - db
       - mosquitto
       - redis
     ports:
       - 8080:8080
 
-  chirpstack-gateway-bridge-eu868:
-    image: chirpstack/chirpstack-gateway-bridge:4.0.0-rc.1
+  chirpstack-gateway-bridge-au915:
+    image: chirpstack/chirpstack-gateway-bridge:latest
     ports:
       - 1700:1700/udp
     volumes:
       - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
     depends_on: 
       - mosquitto
+      - chirpstack-application-server
 
-  chirpstack-rest-api:
-    image: chirpstack/chirpstack-rest-api:4.0.0-rc.1
-    command: --server chirpstack:8080 --bind 0.0.0.0:8090 --insecure
-    ports:
-      - 8090:8090
-    depends_on:
-      - chirpstack
-
-  postgres:
-    image: postgres:14-alpine
+  chirpstack-application-server:
+    image: chirpstack/chirpstack-application-server:latest
     volumes:
-      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
-      - postgresqldata:/var/lib/postgresql/data
+      - ./configuration/chirpstack-application-server:/etc/chirpstack-application-server
+    depends_on:
+      - mosquitto
+      - db
+
+  db:
+    image: postgres:14-alpine
+    container_name: postgresdb
+    restart: always
+    ports:
+      - "5432:5432"
     environment:
-      - POSTGRES_PASSWORD=root
+      POSTGRES_USER: med
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: medicoes
+    volumes:
+      - datapostgres:/var/lib/postgresql/data1
 
   redis:
-    image: redis:7-alpine
+    image: redis
+    ports:
+      - 6379:6379
     volumes:
       - redisdata:/data
 
   mosquitto:
     image: eclipse-mosquitto:2
+    restart: always
     ports:
       - 1883:1883
     volumes: 
       - ./configuration/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
 volumes:
-  postgresqldata:
+  datapostgres:
   redisdata:
