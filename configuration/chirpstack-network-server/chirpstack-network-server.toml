@@ -53,7 +53,7 @@ dsn="postgres://chirpstack_ns:dbpassword@159.223.181.38:5432/chirpstack_ns?sslmo
 # or let ChirpStack Application Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading ChirpStack
 # Application Server and / or applying migrations.
-automigrate=false
+automigrate=true
 
 # Max open connections.
 #
@@ -77,7 +77,7 @@ max_idle_connections=2
 #
 # Set multiple addresses when connecting to a cluster.
 servers=[
-  "redis:6379",
+  "159.223.181.38:6379",
 ]
 
 # Password.
@@ -553,7 +553,7 @@ get_downlink_data_delay="100ms"
     command_topic_template="gateway/{{ .GatewayID }}/command/{{ .CommandType }}"
 
     # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-    server="tcp://mosquitto:1883"
+    server="tcp://159.223.181.38:1883"
 
     # Connect with the given username (optional)
     username=""

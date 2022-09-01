@@ -58,7 +58,7 @@ dsn="postgres://chirpstack_as:dbpassword@159.223.181.38:5432/chirpstack_as?sslmo
 # or let ChirpStack Application Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading Lora
 # App Server and / or applying migrations.
-automigrate=false
+automigrate=true
 
 # Max open connections.
 #
