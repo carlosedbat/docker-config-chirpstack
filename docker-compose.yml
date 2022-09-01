@@ -12,13 +12,13 @@ services:
       - mosquitto
       - redis
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
 
   chirpstack-gateway-bridge-au915:
     image: chirpstack/chirpstack-gateway-bridge
     restart: always
     ports:
-      - 1700:1700/udp
+      - 127.0.0.1:1700:1700/udp
     volumes:
       - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
     depends_on: 
@@ -33,13 +33,15 @@ services:
     depends_on:
       - mosquitto
       - db
+    ports:
+      - 127.0.0.1:8000:8000
 
   db:
     image: postgres:14-alpine
     container_name: postgresdb
     restart: always
     ports:
-      - "5432:5432"
+      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_USER: med
       POSTGRES_PASSWORD: pass
@@ -51,7 +53,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
     volumes:
       - redisdata:/data
 
@@ -59,7 +61,7 @@ services:
     image: eclipse-mosquitto:2
     restart: always
     ports:
-      - 1883:1883
+      - 127.0.0.1:1883:1883
     volumes: 
       - ./configuration/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
 

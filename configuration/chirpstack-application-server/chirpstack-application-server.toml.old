@@ -338,8 +338,9 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # and should not be exposed to the end-user.
   [application_server.api]
   # ip:port to bind the api server
-  bind="0.0.0.0:8001"
-
+  bind="https://localhost:8001"
+  # bind="chirpstack-application-server:8001"
+ 
   # ca certificate used by the api server (optional)
   ca_cert=""
 
@@ -356,7 +357,8 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # this to the host:ip on which ChirpStack Network Server can reach ChirpStack Application Server.
   # The port must be equal to the port configured by the 'bind' flag
   # above.
-  public_host="localhost:8001"
+  public_host="https://localhost:8001"
+  # public_host="chirpstack-application-server:8001"
 
 
   # Settings for the "external api"
@@ -364,7 +366,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # This is the API and web-interface exposed to the end-user.
   [application_server.external_api]
   # ip:port to bind the (user facing) http server to (web-interface and REST / gRPC api)
-  bind="0.0.0.0:8080"
+  bind="https://localhost:8080"
 
   # http server TLS certificate (optional)
   tls_cert=""
@@ -393,7 +395,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 # to handle join-requests.
 [join_server]
 # ip:port to bind the join-server api interface to
-bind="0.0.0.0:8003"
+bind="https://localhost:8003"
 
 # CA certificate (optional).
 #
@@ -524,5 +526,4 @@ timezone="Local"
   #   * Ping PostgreSQL database
   #   * Ping Redis database
   healthcheck_endpoint=false
-
 

@@ -444,7 +444,8 @@ get_downlink_data_delay="100ms"
   # custom components interacting with ChirpStack Network Server.
   [network_server.api]
   # ip:port to bind the api server
-  bind="0.0.0.0:8000"
+  # bind="chirpstack-application-server:8000"
+  bind="https://localhost:8001"
 
   # ca certificate used by the api server (optional)
   ca_cert=""
@@ -718,7 +719,8 @@ resolve_domain_suffix=".joineuis.lora-alliance.org"
   # Default server endpoint.
   #
   # This API is provided by ChirpStack Application Server.
-  server="http://localhost:8003"
+  # server="http://chirpstack-application-server:8000"
+  server="http://localhost8003"
 
   # ca certificate used by the default join-server client (optional)
   ca_cert=""
