@@ -7,22 +7,17 @@ services:
     volumes:
       - ./configuration/chirpstack-network-server:/etc/chirpstack-network-server
       - ./lorawan-devices:/opt/lorawan-devices
-    depends_on:
-      - db
-      - mosquitto
-      - redis
     ports:
-      - 127.0.0.1:8080:8080
+      - 8000:8000
 
   chirpstack-gateway-bridge-au915:
     image: chirpstack/chirpstack-gateway-bridge
     restart: always
     ports:
-      - 127.0.0.1:1700:1700/udp
+      - 1700:1700/udp
     volumes:
       - ./configuration/chirpstack-gateway-bridge:/etc/chirpstack-gateway-bridge
     depends_on: 
-      - mosquitto
       - chirpstack-application-server
 
   chirpstack-application-server:
@@ -30,41 +25,5 @@ services:
     restart: always
     volumes:
       - ./configuration/chirpstack-application-server:/etc/chirpstack-application-server
-    depends_on:
-      - mosquitto
-      - db
     ports:
-      - 127.0.0.1:8000:8000
-
-  db:
-    image: postgres:14-alpine
-    container_name: postgresdb
-    restart: always
-    ports:
-      - 127.0.0.1:5432:5432
-    environment:
-      POSTGRES_USER: med
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: medicoes
-    volumes:
-      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
-      - datapostgres:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - 127.0.0.1:6379:6379
-    volumes:
-      - redisdata:/data
-
-  mosquitto:
-    image: eclipse-mosquitto:2
-    restart: always
-    ports:
-      - 127.0.0.1:1883:1883
-    volumes: 
-      - ./configuration/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
-
-volumes:
-  datapostgres:
-  redisdata:
+      - 8080:8080

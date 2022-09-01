@@ -4,7 +4,7 @@
 #
 # See https://www.chirpstack.io/gateway-bridge/install/config/ for a full
 # configuration example and documentation.
-
+ 
 
 # Gateway backend configuration.
 [backend]
@@ -50,7 +50,7 @@ marshaler="protobuf"
     # Generic MQTT authentication.
     [integration.mqtt.auth.generic]
     # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-    server="tcp://mosquitto:1883"
+    server="tcp://159.223.181.38:1883"
 
     # Connect with the given username (optional)
     username=""
