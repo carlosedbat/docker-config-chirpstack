@@ -49,7 +49,7 @@ grpc_default_resolver_scheme="passthrough"
 # * require - Always SSL (skip verification)
 # * verify-ca - Always SSL (verify that the certificate presented by the server was signed by a trusted CA)
 # * verify-full - Always SSL (verify that the certification presented by the server was signed by a trusted CA and the server host name matches the one in the certificate)
-dsn="postgres://chirpstack_as:dbpassword@localhost:5432/chirpstack_as?sslmode=disable"
+dsn="postgres://chirpstack_as:dbpassword@postgresdb:5432/chirpstack_as?sslmode=disable"
 
 # Automatically apply database migrations.
 #
@@ -64,7 +64,7 @@ automigrate=true
 #
 # This sets the max. number of open connections that are allowed in the
 # PostgreSQL connection pool (0 = unlimited).
-max_open_connections=0
+max_open_connections=10
 
 # Max idle connections.
 #
@@ -82,7 +82,7 @@ max_idle_connections=2
 #
 # Set multiple addresses when connecting to a cluster.
 servers=[
-  "localhost:6379",
+  "redis:6379",
 ]
 
 # Password.
@@ -250,7 +250,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   retain_events=false
 
   # MQTT server (e.g. scheme://host:port where scheme is tcp, ssl or ws)
-  server="tcp://localhost:1883"
+  server="tcp://mosquitto:1883"
 
   # Connect with the given username (optional)
   username=""
@@ -338,8 +338,8 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # and should not be exposed to the end-user.
   [application_server.api]
   # ip:port to bind the api server
-  bind="0.0.0.0:8001"
-
+  bind="chirpstack-application-server:8001"
+ 
   # ca certificate used by the api server (optional)
   ca_cert=""
 
@@ -356,7 +356,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # this to the host:ip on which ChirpStack Network Server can reach ChirpStack Application Server.
   # The port must be equal to the port configured by the 'bind' flag
   # above.
-  public_host="localhost:8001"
+  public_host="chirpstack-application-server:8001"
 
 
   # Settings for the "external api"
@@ -364,7 +364,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
   # This is the API and web-interface exposed to the end-user.
   [application_server.external_api]
   # ip:port to bind the (user facing) http server to (web-interface and REST / gRPC api)
-  bind="0.0.0.0:8080"
+  bind="chirpstack-application-server:8080"
 
   # http server TLS certificate (optional)
   tls_cert=""
@@ -393,7 +393,7 @@ id="6d5db27e-4ce2-4b2b-b5d7-91f069397978"
 # to handle join-requests.
 [join_server]
 # ip:port to bind the join-server api interface to
-bind="0.0.0.0:8003"
+bind="chirpstack-application-server:8003"
 
 # CA certificate (optional).
 #

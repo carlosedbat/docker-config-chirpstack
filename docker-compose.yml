@@ -2,8 +2,8 @@ version: "3"
 
 services:
   chirpstack-network-server:
-    image: chirpstack/chirpstack-network-server:latest
-    restart: unless-stopped
+    image: chirpstack/chirpstack-network-server
+    restart: always
     volumes:
       - ./configuration/chirpstack-network-server:/etc/chirpstack-network-server
       - ./lorawan-devices:/opt/lorawan-devices
@@ -15,7 +15,8 @@ services:
       - 8080:8080
 
   chirpstack-gateway-bridge-au915:
-    image: chirpstack/chirpstack-gateway-bridge:latest
+    image: chirpstack/chirpstack-gateway-bridge
+    restart: always
     ports:
       - 1700:1700/udp
     volumes:
@@ -25,7 +26,8 @@ services:
       - chirpstack-application-server
 
   chirpstack-application-server:
-    image: chirpstack/chirpstack-application-server:latest
+    image: chirpstack/chirpstack-application-server:3
+    restart: always
     volumes:
       - ./configuration/chirpstack-application-server:/etc/chirpstack-application-server
     depends_on:
@@ -43,10 +45,11 @@ services:
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: medicoes
     volumes:
-      - datapostgres:/var/lib/postgresql/data1
+      - ./configuration/postgresql/initdb:/docker-entrypoint-initdb.d
+      - datapostgres:/var/lib/postgresql/data
 
   redis:
-    image: redis
+    image: redis:7-alpine
     ports:
       - 6379:6379
     volumes:
