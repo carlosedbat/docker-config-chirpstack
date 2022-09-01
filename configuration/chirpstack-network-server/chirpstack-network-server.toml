@@ -53,7 +53,7 @@ dsn="postgres://chirpstack_ns:dbpassword@postgresdb:5432/chirpstack_ns?sslmode=d
 # or let ChirpStack Application Server migrate to the latest state automatically, by using
 # this setting. Make sure that you always make a backup when upgrading ChirpStack
 # Application Server and / or applying migrations.
-automigrate=true
+automigrate=false
 
 # Max open connections.
 #
